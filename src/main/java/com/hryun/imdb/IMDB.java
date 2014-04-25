@@ -33,6 +33,8 @@ public class IMDB
 	// Show information
 	private String cast = "";
 	private String director = "";
+	private String genre = "";
+	private String description = "";
 	private String poster = "";
 	private float rating = 0f;
 	private String recommended = "";
@@ -160,8 +162,10 @@ public class IMDB
 	{
 		// Regex
 		final String IMDB_CAST      = "itemprop=\"actor\"(.*?)<span class=\"itemprop\" itemprop=\"name\">(.*?)</span>";
-		final String IMDB_DIRECTOR  = "(Director|Directors):</h4>(.*?)</div>"; 
+		final String IMDB_DIRECTOR  = "(Director|Directors):</h4>(.*?)</div>";
+		final String IMDB_GENRE		= "\"itemprop\" itemprop=\"genre\">(.*?)</span>";
 		final String IMDB_NAME      = "<span class=\"itemprop\" itemprop=\"name\">(.*?)</span>";
+		final String IMDB_DESC		= "itemprop=\"description\"><p>(.*?)(\\s+)<em";
 		final String IMDB_POSTER    = "<div class=\"image\">(.*?)src=\"(.*?)\"(.*?)itemprop=\"image\" />";
 		final String IMDB_RATING    = "<span itemprop=\"ratingValue\">(.*?)</span>";
 		final String IMDB_TITLE     = "property='og:title' content=\"(.*?) \\((.*?)([0-9]{4}?)";
@@ -186,6 +190,16 @@ public class IMDB
 		pattern = Pattern.compile(IMDB_NAME);
 		matcher = pattern.matcher(tempHtml);
 		while(matcher.find()) director = (director.length() > 0)? director + ", " + matcher.group(1): matcher.group(1);
+		
+		// Get the genre
+		pattern = Pattern.compile(IMDB_GENRE);
+		matcher = pattern.matcher(html);
+		while(matcher.find()) genre = (genre.length() > 0)? genre + ", " + matcher.group(1): matcher.group(1);
+		
+		// Get the description
+		pattern = Pattern.compile(IMDB_DESC);
+		matcher = pattern.matcher(html);
+		if(matcher.find()) description = matcher.group(1);
 		
 		// Get the poster
 		pattern = Pattern.compile(IMDB_POSTER);
@@ -282,6 +296,22 @@ public class IMDB
 	public String getDirector()
 	{
 		return director;
+	}
+
+	/**
+	 * @return the genre
+	 */
+	public String getGenre()
+	{
+		return genre;
+	}
+
+	/**
+	 * @return the description
+	 */
+	public String getDescription()
+	{
+		return description;
 	}
 
 	/**

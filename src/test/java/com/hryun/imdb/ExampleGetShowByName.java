@@ -48,6 +48,8 @@ public class ExampleGetShowByName
 			System.out.println("Show id....: " + imdb.getId());
 			System.out.println("Show url...: " + imdb.getUrl());
 			System.out.println("Title/Name.: " + imdb.getTitle());
+			System.out.println("Genre......: " + imdb.getGenre());
+			System.out.println("Description: " + imdb.getDescription());
 			System.out.println("Director...: " + imdb.getDirector());
 			System.out.println("Rating.....: " + imdb.getRating());
 			System.out.println("Year.......: " + imdb.getYear());
