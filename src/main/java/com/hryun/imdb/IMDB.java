@@ -20,6 +20,8 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -31,40 +33,81 @@ public class IMDB
 	private boolean found;
 	
 	// Show information
-	private String cast = "";
-	private String director = "";
-	private String genre = "";
-	private String description = "";
-	private String poster = "";
+	private String title, genre, description, director, cast, poster, recommended;
 	private float rating = 0f;
-	private String recommended = "";
-	private String title = "";
 	private short year = 0;
 	
+	/**
+	 * Constructor
+	 */
 	public IMDB()
 	{
-		this.found = false;
+		initialize();
+	}
+	
+	/**
+	 * Initialize the constructor and search for with a show with the id
+	 * 
+	 * @param id String - IMDb show id
+	 */
+	public IMDB(String id)
+	{
+		initialize();
+		findById(id);
+	}
+	
+	/**
+	 * Initialize all variables
+	 */
+	private void initialize()
+	{
+		title = "";
+		genre = "";
+		description = "";
+		director = "";
+		cast = "";
+		poster = "";
+		recommended = "";
+		rating = 0f;
+		year = 0;
+		found = false;
 	}
 	
 	/**
 	 * Find a show information based on its Id
 	 * 
-	 * @param id
-	 * @return
+	 * @param id String
+	 * @return true if a show was found
 	 */
-	public boolean findById(String id)
+	public boolean findById(final String id)
 	{
 		this.id = id;
 		this.url = "http://www.imdb.com/title/" + id;
 		
-		// Get the HTML
-		String html = fetchHtml(url);
+		// Initialize the variables before we start
+		initialize();
 		
-		if(!html.isEmpty())
-		{
-			found = true;
-			parseHtml(html);
-		}
+		ExecutorService executor = Executors.newFixedThreadPool(2);
+
+		Thread t1 = new Thread(new Runnable() {
+			public void run() {
+				parseMain(id);
+			}
+		});
+		
+		Thread t2 = new Thread(new Runnable() {
+			public void run() {
+				parseCredits(id);
+			}
+		});
+		
+		// Executando as threads
+		executor.execute(t1);
+		executor.execute(t2);
+		
+		// While until all threads finish
+		executor.shutdown();
+		while(!executor.isTerminated());
 		
 		return found;
 	}
@@ -72,8 +115,8 @@ public class IMDB
 	/**
 	 * Find a list of shows that match the search parameter
 	 * 
-	 * @param name
-	 * @return
+	 * @param name String - the name of the show you are looking for.
+	 * @return List object with one or more Ma objects; each Map has the keys "id" and "name" of the search results.
 	 */
 	public List<Map<String, String>> findByName(String name)
 	{
@@ -104,6 +147,34 @@ public class IMDB
 		}
 		
 		return list;
+	}
+	
+	/**
+	 * Saves the poster locally
+	 * 
+	 * @param posterFile File - the location where you want to save the poster file.
+	 */
+	public void downloadPoster(File posterFile)
+	{
+		if(!this.poster.isEmpty())
+		{
+			try
+			{
+				URL posterUrl = new URL(this.poster);
+				ReadableByteChannel rbc = Channels.newChannel(posterUrl.openStream());
+				FileOutputStream fos = new FileOutputStream(posterFile);
+				fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
+				fos.close();
+			}
+			catch(MalformedURLException e)
+			{
+				e.printStackTrace();
+			}
+			catch(IOException e)
+			{
+				e.printStackTrace();
+			}
+		}
 	}
 	
 	/**
@@ -154,105 +225,102 @@ public class IMDB
 	}
 	
 	/**
-	 * Parse the HTML code and puts the extracted information in the corresponding fields
-	 * 
-	 * @param html
+	 * Parse the HTML from the main page
 	 */
-	private void parseHtml(String html)
-	{
-		// Regex
-		final String IMDB_CAST      = "itemprop=\"actor\"(.*?)<span class=\"itemprop\" itemprop=\"name\">(.*?)</span>";
-		final String IMDB_DIRECTOR  = "(Director|Directors):</h4>(.*?)</div>";
-		final String IMDB_GENRE		= "\"itemprop\" itemprop=\"genre\">(.*?)</span>";
-		final String IMDB_NAME      = "<span class=\"itemprop\" itemprop=\"name\">(.*?)</span>";
-		final String IMDB_DESC		= "itemprop=\"description\"><p>(.*?)(\\s+)<em";
-		final String IMDB_POSTER    = "<div class=\"image\">(.*?)src=\"(.*?)\"(.*?)itemprop=\"image\" />";
-		final String IMDB_RATING    = "<span itemprop=\"ratingValue\">(.*?)</span>";
-		final String IMDB_TITLE     = "property='og:title' content=\"(.*?) \\((.*?)([0-9]{4}?)";
-		final String IMDB_YEAR      = "property='og:title' content=\"(.*?) \\((.*?)([0-9]{4}?)";
-		final String IMDB_RECOMMEND = "<div class=\"rec_item\"(.*?)<a href=\"/title/(.*?)/\\?ref_=tt_rec_tti\" >"; 
+	private void parseMain(String id)
+	{	
+		String url = "http://www.imdb.com/title/" + id;
+		String html = fetchHtml(url);
 		
-		// Variables
-		Pattern pattern;
-		Matcher matcher;
-		String tempHtml = "";
-		
-		// Get the cast
-		pattern = Pattern.compile(IMDB_CAST);
-		matcher = pattern.matcher(html);
-		while(matcher.find()) cast = (cast.length() > 0)? cast + ", " + matcher.group(2): matcher.group(2);
-		
-		// Get the diretor/name
-		pattern = Pattern.compile(IMDB_DIRECTOR);
-		matcher = pattern.matcher(html);
-		if(matcher.find()) tempHtml = matcher.group(2);
-		
-		pattern = Pattern.compile(IMDB_NAME);
-		matcher = pattern.matcher(tempHtml);
-		while(matcher.find()) director = (director.length() > 0)? director + ", " + matcher.group(1): matcher.group(1);
-		
-		// Get the genre
-		pattern = Pattern.compile(IMDB_GENRE);
-		matcher = pattern.matcher(html);
-		while(matcher.find()) genre = (genre.length() > 0)? genre + ", " + matcher.group(1): matcher.group(1);
-		
-		// Get the description
-		pattern = Pattern.compile(IMDB_DESC);
-		matcher = pattern.matcher(html);
-		if(matcher.find()) description = matcher.group(1);
-		
-		// Get the poster
-		pattern = Pattern.compile(IMDB_POSTER);
-		matcher = pattern.matcher(html);
-		if(matcher.find()) poster = matcher.group(2);
-		
-		// Get the rating
-		pattern = Pattern.compile(IMDB_RATING);
-		matcher = pattern.matcher(html);
-		if(matcher.find()) rating = Float.parseFloat(matcher.group(1));
-		
-		// Get the cast
-		pattern = Pattern.compile(IMDB_RECOMMEND);
-		matcher = pattern.matcher(html);
-		while(matcher.find()) recommended = (recommended.length() > 0)? recommended + ", " + matcher.group(2):
-			matcher.group(2);
-		
-		// Get the title
-		pattern = Pattern.compile(IMDB_TITLE);
-		matcher = pattern.matcher(html);
-		if(matcher.find()) title = matcher.group(1);
-		
-		// Get the year
-		pattern = Pattern.compile(IMDB_YEAR);
-		matcher = pattern.matcher(html);
-		if(matcher.find()) year = Short.parseShort(matcher.group(3));
+		if(!html.isEmpty())
+		{
+			// Regex
+			final String IMDB_CAST      = "itemprop=\"actor\"(.*?)<span class=\"itemprop\" itemprop=\"name\">(.*?)</span>";
+			final String IMDB_GENRE     = "\"itemprop\" itemprop=\"genre\">(.*?)</span>";
+			final String IMDB_DESC      = "itemprop=\"description\"><p>(.*?)(\\s+)<em";
+			final String IMDB_POSTER    = "<div class=\"image\">(.*?)src=\"(.*?)\"(.*?)itemprop=\"image\" />";
+			final String IMDB_RATING    = "<span itemprop=\"ratingValue\">(.*?)</span>";
+			final String IMDB_TITLE     = "property='og:title' content=\"(.*?) \\((.*?)([0-9]{4}?)";
+			final String IMDB_YEAR      = "property='og:title' content=\"(.*?) \\((.*?)([0-9]{4}?)";
+			final String IMDB_RECOMMEND = "<div class=\"rec_item\"(.*?)<a href=\"/title/(.*?)/\\?ref_=tt_rec_tti\" >"; 
+			
+			// Variables
+			Pattern pattern;
+			Matcher matcher;
+			
+			// Get the cast
+			pattern = Pattern.compile(IMDB_CAST);
+			matcher = pattern.matcher(html);
+			while(matcher.find()) cast = (cast.length() > 0)? cast + ", " + matcher.group(2): matcher.group(2);
+			
+			// Get the genre
+			pattern = Pattern.compile(IMDB_GENRE);
+			matcher = pattern.matcher(html);
+			while(matcher.find()) genre = (genre.length() > 0)? genre + ", " + matcher.group(1): matcher.group(1);
+			
+			// Get the description
+			pattern = Pattern.compile(IMDB_DESC);
+			matcher = pattern.matcher(html);
+			if(matcher.find()) description = matcher.group(1);
+			
+			// Get the poster
+			pattern = Pattern.compile(IMDB_POSTER);
+			matcher = pattern.matcher(html);
+			if(matcher.find()) poster = matcher.group(2);
+			
+			// Get the rating
+			pattern = Pattern.compile(IMDB_RATING);
+			matcher = pattern.matcher(html);
+			if(matcher.find()) rating = Float.parseFloat(matcher.group(1));
+			
+			// Get the cast
+			pattern = Pattern.compile(IMDB_RECOMMEND);
+			matcher = pattern.matcher(html);
+			while(matcher.find()) recommended = (recommended.length() > 0)? recommended + ", " + matcher.group(2):
+				matcher.group(2);
+			
+			// Get the title
+			pattern = Pattern.compile(IMDB_TITLE);
+			matcher = pattern.matcher(html);
+			if(matcher.find()) title = matcher.group(1);
+			
+			// Get the year
+			pattern = Pattern.compile(IMDB_YEAR);
+			matcher = pattern.matcher(html);
+			if(matcher.find()) year = Short.parseShort(matcher.group(3));
+			
+			found = true;
+		}
 	}
 	
 	/**
-	 * Saves the poster locally
-	 * 
-	 * @param posterFile
+	 * Parse the HTML from the credits page
 	 */
-	public void downloadPoster(File posterFile)
-	{
-		if(!this.poster.isEmpty())
+	private void parseCredits(String id)
+	{	
+		String url = "http://www.imdb.com/title/" + id + "/fullcredits";
+		String html = fetchHtml(url);
+		
+		// Regex
+		if(!html.isEmpty())
 		{
-			try
-			{
-				URL posterUrl = new URL(this.poster);
-				ReadableByteChannel rbc = Channels.newChannel(posterUrl.openStream());
-				FileOutputStream fos = new FileOutputStream(posterFile);
-				fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
-				fos.close();
-			}
-			catch(MalformedURLException e)
-			{
-				e.printStackTrace();
-			}
-			catch(IOException e)
-			{
-				e.printStackTrace();
-			}
+			final String IMDB_DIRECTOR = "Directed by(.*?)</tbody>";
+			final String IMDB_NAME     = "<a href=(.*?)> (.*?)</a>";
+			
+			// Variables
+			Pattern pattern;
+			Matcher matcher;
+			String tempHtml = "";
+			
+			// Get the diretor/name
+			pattern = Pattern.compile(IMDB_DIRECTOR);
+			matcher = pattern.matcher(html);
+			if(matcher.find()) tempHtml = matcher.group(1);
+
+			pattern = Pattern.compile(IMDB_NAME);
+			matcher = pattern.matcher(tempHtml);
+			while(matcher.find()) director = (director.length() > 0)? director + ", " + matcher.group(2):
+				matcher.group(2);
 		}
 	}
 	
