@@ -359,7 +359,6 @@ public class IMDB
 		// Regex
 		if(!html.isEmpty())
 		{
-			System.out.println(html);
 			final String IMDB_VID_ID   = "<h2><a href=\"/video/imdb/(.*?)\">";
 			final String IMDB_VID_NAME = "<h2><a href=\"/video/imdb/(.*?)\">(.*?)</a>";
 			
