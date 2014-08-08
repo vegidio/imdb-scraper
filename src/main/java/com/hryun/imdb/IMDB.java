@@ -36,6 +36,7 @@ public class IMDB
 	private String title, genre, description, director, cast, poster, recommended;
 	private float rating = 0f;
 	private short year = 0;
+	private List<Map<String, String>> videos;
 	
 	/**
 	 * Constructor
@@ -70,6 +71,7 @@ public class IMDB
 		recommended = "";
 		rating = 0f;
 		year = 0;
+		videos = new ArrayList<Map<String, String>>();
 		found = false;
 	}
 	
@@ -87,7 +89,7 @@ public class IMDB
 		// Initialize the variables before we start
 		initialize();
 		
-		ExecutorService executor = Executors.newFixedThreadPool(2);
+		ExecutorService executor = Executors.newFixedThreadPool(3);
 
 		Thread t1 = new Thread(new Runnable() {
 			public void run() {
@@ -101,9 +103,16 @@ public class IMDB
 			}
 		});
 		
+		Thread t3 = new Thread(new Runnable() {
+			public void run() {
+				parseVideos(id);
+			}
+		});
+		
 		// Executando as threads
 		executor.execute(t1);
 		executor.execute(t2);
+		executor.execute(t3);
 		
 		// While until all threads finish
 		executor.shutdown();
@@ -177,6 +186,23 @@ public class IMDB
 		}
 	}
 	
+	public String getVideoUrl(String videoId)
+	{	
+		String result = "";
+		String url = "http://www.imdb.com/video/imdb/" + videoId + "/imdb/single?format=480p";
+		String html = fetchHtml(url);
+
+		if(!html.isEmpty())
+		{
+			final String VIDEO_URL = "\"url\":\"(.*?)\",";
+			Pattern pattern = Pattern.compile(VIDEO_URL);
+			Matcher matcher = pattern.matcher(html);
+			if(matcher.find()) result = matcher.group(1);
+		}
+		
+		return result;
+	}
+	
 	/**
 	 * Retrive the HTML content of the page
 	 * 
@@ -233,7 +259,7 @@ public class IMDB
 		String html = fetchHtml(url);
 		
 		if(!html.isEmpty())
-		{
+		{	
 			// Regex
 			final String IMDB_CAST      = "itemprop=\"actor\"(.*?)<span class=\"itemprop\" itemprop=\"name\">(.*?)</span>";
 			final String IMDB_GENRE     = "\"itemprop\" itemprop=\"genre\">(.*?)</span>";
@@ -242,7 +268,7 @@ public class IMDB
 			final String IMDB_RATING    = "<span itemprop=\"ratingValue\">(.*?)</span>";
 			final String IMDB_TITLE     = "property='og:title' content=\"(.*?) \\((.*?)([0-9]{4}?)";
 			final String IMDB_YEAR      = "property='og:title' content=\"(.*?) \\((.*?)([0-9]{4}?)";
-			final String IMDB_RECOMMEND = "<div class=\"rec_item\"(.*?)<a href=\"/title/(.*?)/\\?ref_=tt_rec_tti\" >"; 
+			final String IMDB_RECOMMEND = "<div class=\"rec_item\"(.*?)<a href=\"/title/(.*?)/\\?ref_=tt_rec_tti\""; 
 			
 			// Variables
 			Pattern pattern;
@@ -322,6 +348,50 @@ public class IMDB
 			while(matcher.find()) director = (director.length() > 0)? director + ", " + matcher.group(2):
 				matcher.group(2);
 		}
+	}
+	
+	private void parseVideos(String id)
+	{
+		List<Map<String, String>> list = new ArrayList<Map<String, String>>();
+		String url = "http://www.imdb.com/title/" + id + "/videogallery";
+		String html = fetchHtml(url);
+		
+		// Regex
+		if(!html.isEmpty())
+		{
+			System.out.println(html);
+			final String IMDB_VID_ID   = "<h2><a href=\"/video/imdb/(.*?)\">";
+			final String IMDB_VID_NAME = "<h2><a href=\"/video/imdb/(.*?)\">(.*?)</a>";
+			
+			// Variables
+			Pattern pattern;
+			Matcher matcher;
+			
+			// Get the video id
+			pattern = Pattern.compile(IMDB_VID_ID);
+			matcher = pattern.matcher(html);
+			
+			while(matcher.find())
+			{
+				Map<String, String> map = new LinkedHashMap<String, String>();
+				map.put("id", matcher.group(1));
+				list.add(map);
+			}
+			
+			// Get the video name
+			pattern = Pattern.compile(IMDB_VID_NAME);
+			matcher = pattern.matcher(html);
+			int i = 0;
+			
+			while(matcher.find())
+			{
+				Map<String, String> map = list.get(i);
+				map.put("name", matcher.group(2));
+				list.set(i++, map);
+			}
+		}
+		
+		videos = list;
 	}
 	
 	/**
@@ -412,5 +482,10 @@ public class IMDB
 	public short getYear()
 	{
 		return year;
+	}
+	
+	public List<Map<String, String>> getVideos()
+	{
+		return videos;
 	}
 }

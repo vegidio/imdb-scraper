@@ -13,7 +13,7 @@ public class ExampleGetShowById
 		IMDB imdb = new IMDB();
 		
 		// Get a show by its IMDb id; in this case, The Simpsons
-		imdb.findById("tt0096697");
+		imdb.findById("tt0944947");
 		
 		// Check if the show was found
 		if(imdb.hasFound())
@@ -27,6 +27,7 @@ public class ExampleGetShowById
 			System.out.println("Rating.....: " + imdb.getRating());
 			System.out.println("Year.......: " + imdb.getYear());
 			System.out.println("Recommended: " + imdb.getRecommended());
+			System.out.println("Videos.....: " + imdb.getVideos());
 		}
 		else
 		{
