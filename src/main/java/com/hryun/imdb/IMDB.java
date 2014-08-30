@@ -1,7 +1,7 @@
 /**
  * @author Vinícius Egidio (vegidio@gmail.com)
  * Feb 15th 2014
- * v1.0
+ * v1.2
  */
 
 package com.hryun.imdb;
@@ -159,7 +159,7 @@ public class IMDB
     }
 
     /**
-     * Saves the poster locally
+     * Save the poster locally
      *
      * @param posterFile File - the location where you want to save the poster file.
      */
@@ -167,24 +167,49 @@ public class IMDB
     {
         if(!this.poster.isEmpty())
         {
-            try
-            {
-                URL posterUrl = new URL(this.poster);
-                ReadableByteChannel rbc = Channels.newChannel(posterUrl.openStream());
-                FileOutputStream fos = new FileOutputStream(posterFile);
-                fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
-                fos.close();
-            }
-            catch(MalformedURLException e)
-            {
-                e.printStackTrace();
-            }
-            catch(IOException e)
-            {
-                e.printStackTrace();
-            }
-        }
+			String url = this.poster;
+			downloadFile(posterFile, url);
+		}
     }
+
+	/**
+	 * Save the poster locally
+	 *
+	 * @param posterFile File - the location where you want to save the poster file.
+	 * @param bigVersion boolean - if true, it will download the big version of the poster.
+	 */
+	public void downloadPoster(File posterFile, boolean bigVersion)
+	{
+		if(!this.poster.isEmpty())
+		{
+			String url = this.poster;
+			if(bigVersion == true) { url = url.replaceAll("\\._V1_(.*?)\\.jpg", "._V1_.jpg"); }
+			downloadFile(posterFile, url);
+		}
+	}
+
+	/**
+	 * Download the file
+	 */
+	private void downloadFile(File posterFile, String url)
+	{
+		try
+		{
+			URL posterUrl = new URL(url);
+			ReadableByteChannel rbc = Channels.newChannel(posterUrl.openStream());
+			FileOutputStream fos = new FileOutputStream(posterFile);
+			fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
+			fos.close();
+		}
+		catch(MalformedURLException e)
+		{
+			e.printStackTrace();
+		}
+		catch(IOException e)
+		{
+			e.printStackTrace();
+		}
+	}
 
     public String getVideoUrl(String videoId)
     {

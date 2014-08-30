@@ -36,9 +36,11 @@ public class ExampleDownloadShowPoster
 			 * file will created.
 			 */
 			File posterFile = new File("/Users/vegidio/poster.jpg");
-			
+			File bigPosterFile = new File("/Users/vegidio/poster_big.jpg");
+
 			// Download the show's poster. If the show doesn't have a poster, the following function does nothing
 			imdb.downloadPoster(posterFile);
+			imdb.downloadPoster(bigPosterFile, true);
 		}
 		else
 		{
