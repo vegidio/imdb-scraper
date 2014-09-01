@@ -10,11 +10,10 @@ public class ExampleGetVideoUrl
 {
 	public static void main(String[] args)
 	{
-		IMDB imdb = new IMDB();
+		Scraper scraper = new Scraper();
 		
-		// Get a show by its IMDb id; in this case, The Simpsons
-		String url = imdb.getVideoUrl("vi972070937");
+		// Get a video by it's IMDb id; in this case, Game of Thrones
+		String url = scraper.getVideoUrl("vi972070937");
 		System.out.println(url);
-		System.out.println("Done!");
 	}
 }

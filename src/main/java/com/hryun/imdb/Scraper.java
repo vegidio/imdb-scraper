@@ -1,19 +1,16 @@
 /**
  * @author Vinícius Egidio (vegidio@gmail.com)
  * Feb 15th 2014
- * v1.2
+ * v1.3
  */
 
 package com.hryun.imdb;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.util.ArrayList;
@@ -25,7 +22,7 @@ import java.util.concurrent.Executors;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class IMDB
+public class Scraper
 {
     // Basic variables
     private String id;
@@ -41,7 +38,7 @@ public class IMDB
     /**
      * Constructor
      */
-    public IMDB()
+    public Scraper()
     {
         initialize();
     }
@@ -51,7 +48,7 @@ public class IMDB
      *
      * @param id String - IMDb show id
      */
-    public IMDB(String id)
+    public Scraper(String id)
     {
         initialize();
         findById(id);
@@ -122,12 +119,24 @@ public class IMDB
     }
 
     /**
-     * Find a list of shows that match the search parameter
+     * Do a search using the default type ALL.
      *
-     * @param name String - the name of the show you are looking for.
-     * @return List object with one or more Ma objects; each Map has the keys "id" and "name" of the search results.
+     * @param query String - the name of the item you are looking for.
+     * @return List with one or more Map objects; each Map has the keys "id" and "name" of the search results.
      */
-    public List<Map<String, String>> findByName(String name)
+    public List<Map<String, String>> search(String query)
+    {
+        return search(query, SearchType.ALL);
+    }
+
+    /**
+     * Do a search.
+     *
+     * @param query String - the name of the item you are looking for.
+     * @param searchType String - the type of search; options available in the SearchType class;
+     * @return List with one or more Map objects; each Map has the keys "id" and "name" of the search results.
+     */
+    public List<Map<String, String>> search(String query, String searchType)
     {
         // Regex
         final String SEARCH_ID_NAME = "\"result_text\"> <a href=\"/title/tt([0-9]*)/(.*?)\" >(.*?)</a>";
@@ -138,9 +147,13 @@ public class IMDB
         List<Map<String, String>> list = new ArrayList<Map<String, String>>();
         Map<String, String> map = null;
 
+        // URL encode the query
+        String search = null;
+        try { search = URLEncoder.encode(query, "UTF-8"); }
+        catch (UnsupportedEncodingException e) { e.printStackTrace(); }
+
         // Do the search and get the HTML
-        String search = name.replace(" ", "+");
-        search = "http://www.imdb.com/find?q=" + search + "&s=all";
+        search = "http://www.imdb.com/find?q=" + search + "&s=" + searchType;
         String html = fetchHtml(search);
 
         // Extract the ID & Name
@@ -289,7 +302,7 @@ public class IMDB
             final String IMDB_CAST      = "itemprop=\"actor\"(.*?)<span class=\"itemprop\" itemprop=\"name\">(.*?)</span>";
             final String IMDB_GENRE     = "\"itemprop\" itemprop=\"genre\">(.*?)</span>";
             final String IMDB_DESC      = "itemprop=\"description\"><p>(.*?)(\\s+)<em";
-            final String IMDB_POSTER    = "<div class=\"image\">(.*?)src=\"(.*?)\"(.*?)itemprop=\"image\" />";
+            final String IMDB_POSTER    = "<div class=\"image\"(.*?)src=\"(.*?)\"itemprop=\"image\" />";
             final String IMDB_RATING    = "<span itemprop=\"ratingValue\">(.*?)</span>";
             final String IMDB_TITLE     = "property='og:title' content=\"(.*?) \\((.*?)([0-9]{4}?)";
             final String IMDB_YEAR      = "property='og:title' content=\"(.*?) \\((.*?)([0-9]{4}?)";

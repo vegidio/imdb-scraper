@@ -13,10 +13,10 @@ public class ExampleGetShowByName
 {
 	public static void main(String[] args)
 	{
-		IMDB imdb = new IMDB();
+		Scraper scraper = new Scraper();
 		
 		// Search for the show using its name
-		List<Map<String, String>> results = imdb.findByName("The Simpsons");
+		List<Map<String, String>> results = scraper.search("The Simpsons", SearchType.TITLE);
 		
 		/*
 		 * We _usually_ (not always!) find more than one result when we search by the name because:
@@ -37,23 +37,23 @@ public class ExampleGetShowByName
 		 * wrote this example). Lets get the show information using its id and print on the screen.
 		 */
 		String imdbId = results.get(0).get("id");
-		imdb.findById(imdbId);
+		scraper.findById(imdbId);
 		
 		// Check if the show was found
-		if(imdb.hasFound())
+		if(scraper.hasFound())
 		{
 			// Intentional blank line
 			System.out.println("");
 			
-			System.out.println("Show id....: " + imdb.getId());
-			System.out.println("Show url...: " + imdb.getUrl());
-			System.out.println("Title/Name.: " + imdb.getTitle());
-			System.out.println("Genre......: " + imdb.getGenre());
-			System.out.println("Description: " + imdb.getDescription());
-			System.out.println("Director...: " + imdb.getDirector());
-			System.out.println("Rating.....: " + imdb.getRating());
-			System.out.println("Year.......: " + imdb.getYear());
-			System.out.println("Recommended: " + imdb.getRecommended());
+			System.out.println("Show id....: " + scraper.getId());
+			System.out.println("Show url...: " + scraper.getUrl());
+			System.out.println("Title/Name.: " + scraper.getTitle());
+			System.out.println("Genre......: " + scraper.getGenre());
+			System.out.println("Description: " + scraper.getDescription());
+			System.out.println("Director...: " + scraper.getDirector());
+			System.out.println("Rating.....: " + scraper.getRating());
+			System.out.println("Year.......: " + scraper.getYear());
+			System.out.println("Recommended: " + scraper.getRecommended());
 		}
 		else
 		{

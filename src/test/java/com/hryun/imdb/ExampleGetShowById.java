@@ -10,24 +10,24 @@ public class ExampleGetShowById
 {
 	public static void main(String[] args)
 	{
-		IMDB imdb = new IMDB();
+		Scraper scraper = new Scraper();
 		
 		// Get a show by its IMDb id; in this case, The Simpsons
-		imdb.findById("tt0944947");
+		scraper.findById("tt0096697");
 		
 		// Check if the show was found
-		if(imdb.hasFound())
+		if(scraper.hasFound())
 		{
-			System.out.println("Show id....: " + imdb.getId());
-			System.out.println("Show url...: " + imdb.getUrl());
-			System.out.println("Title/Name.: " + imdb.getTitle());
-			System.out.println("Genre......: " + imdb.getGenre());
-			System.out.println("Description: " + imdb.getDescription());
-			System.out.println("Director...: " + imdb.getDirector());
-			System.out.println("Rating.....: " + imdb.getRating());
-			System.out.println("Year.......: " + imdb.getYear());
-			System.out.println("Recommended: " + imdb.getRecommended());
-			System.out.println("Videos.....: " + imdb.getVideos());
+			System.out.println("Show id....: " + scraper.getId());
+			System.out.println("Show url...: " + scraper.getUrl());
+			System.out.println("Title/Name.: " + scraper.getTitle());
+			System.out.println("Genre......: " + scraper.getGenre());
+			System.out.println("Description: " + scraper.getDescription());
+			System.out.println("Director...: " + scraper.getDirector());
+			System.out.println("Rating.....: " + scraper.getRating());
+			System.out.println("Year.......: " + scraper.getYear());
+			System.out.println("Recommended: " + scraper.getRecommended());
+			System.out.println("Videos.....: " + scraper.getVideos());
 		}
 		else
 		{
