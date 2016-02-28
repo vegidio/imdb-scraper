@@ -13,10 +13,7 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.regex.Matcher;
@@ -302,7 +299,7 @@ public class Scraper
             final String IMDB_CAST      = "itemprop=\"actor\"(.*?)<span class=\"itemprop\" itemprop=\"name\">(.*?)</span>";
             final String IMDB_GENRE     = "\"itemprop\" itemprop=\"genre\">(.*?)</span>";
             final String IMDB_DESC      = "itemprop=\"description\"><p>(.*?)(\\s+)<em";
-            final String IMDB_POSTER    = "<div class=\"image\"(.*?)src=\"(.*?)\"itemprop=\"image\" />";
+            final String IMDB_POSTER    = "<div class=\"poster\">.*?<img.*?src=\"(.*?)\"itemprop=\"image\" />";
             final String IMDB_RATING    = "<span itemprop=\"ratingValue\">(.*?)</span>";
             final String IMDB_TITLE     = "property='og:title' content=\"(.*?) \\((.*?)([0-9]{4}?)";
             final String IMDB_YEAR      = "property='og:title' content=\"(.*?) \\((.*?)([0-9]{4}?)";
@@ -330,7 +327,7 @@ public class Scraper
             // Get the poster
             pattern = Pattern.compile(IMDB_POSTER);
             matcher = pattern.matcher(html);
-            if(matcher.find()) poster = matcher.group(2);
+            if(matcher.find()) poster = matcher.group(1);
 
             // Get the rating
             pattern = Pattern.compile(IMDB_RATING);
