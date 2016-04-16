@@ -72,7 +72,7 @@ More examples can be found in the folder `src/test/java/com/hryun/imdb/`.
 
 ## License
 
-**imdb-scraper** is released under the Apache License. See <a href="LICENSE.md">LICENSE</a> for details.
+**imdb-scraper** is released under the Apache License. See <a href="LICENSE.txt">LICENSE</a> for details.
 
 ## Author
 
