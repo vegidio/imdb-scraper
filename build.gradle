@@ -1,7 +1,7 @@
 apply plugin: 'java'
 
 allprojects {
-    version = '1.0'
+    version = '1.0.1'
     sourceCompatibility = 1.8
     targetCompatibility = 1.8
 }

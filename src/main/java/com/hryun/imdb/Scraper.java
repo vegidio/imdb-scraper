@@ -193,33 +193,29 @@ public class Scraper
 		if(!this.poster.isEmpty())
 		{
 			String url = this.poster;
-			if(bigVersion == true) { url = url.replaceAll("\\._V1_(.*?)\\.jpg", "._V1_.jpg"); }
+			if(bigVersion) { url = url.replaceAll("\\._V1_(.*?)\\.jpg", "._V1_.jpg"); }
 			downloadFile(posterFile, url);
 		}
 	}
 
-	/**
-	 * Download the file
-	 */
-	private void downloadFile(File posterFile, String url)
-	{
-		try
-		{
-			URL posterUrl = new URL(url);
-			ReadableByteChannel rbc = Channels.newChannel(posterUrl.openStream());
-			FileOutputStream fos = new FileOutputStream(posterFile);
-			fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
-			fos.close();
-		}
-		catch(MalformedURLException e)
-		{
-			e.printStackTrace();
-		}
-		catch(IOException e)
-		{
-			e.printStackTrace();
-		}
-	}
+    /**
+     * Download the file
+     */
+    private void downloadFile(File posterFile, String url)
+    {
+        try
+        {
+            URL posterUrl = new URL(url);
+            ReadableByteChannel rbc = Channels.newChannel(posterUrl.openStream());
+            FileOutputStream fos = new FileOutputStream(posterFile);
+            fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
+            fos.close();
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+    }
 
     public String getVideoUrl(String videoId)
     {
@@ -273,10 +269,6 @@ public class Scraper
             // Close the connection
             conn.disconnect();
         }
-        catch(MalformedURLException e)
-        {
-            e.printStackTrace();
-        }
         catch(IOException e)
         {
             e.printStackTrace();
@@ -296,13 +288,13 @@ public class Scraper
         if(!html.isEmpty())
         {
             // Regex
-            final String IMDB_CAST      = "itemprop=\"actor\"(.*?)<span class=\"itemprop\" itemprop=\"name\">(.*?)</span>";
+            final String IMDB_CAST      = "itemprop=\"actor\".*?<span class=\"itemprop\" itemprop=\"name\">(.*?)</span>";
             final String IMDB_GENRE     = "\"itemprop\" itemprop=\"genre\">(.*?)</span>";
-            final String IMDB_DESC      = "itemprop=\"description\"><p>(.*?)(\\s+)<em";
+            final String IMDB_DESC      = "itemprop=\"description\"><p>(.*?)\\s+<em";
             final String IMDB_POSTER    = "<div class=\"poster\">.*?<img.*?src=\"(.*?)\"itemprop=\"image\" />";
             final String IMDB_RATING    = "<span itemprop=\"ratingValue\">(.*?)</span>";
-            final String IMDB_TITLE     = "property='og:title' content=\"(.*?) \\((.*?)([0-9]{4}?)";
-            final String IMDB_YEAR      = "property='og:title' content=\"(.*?) \\((.*?)([0-9]{4}?)";
+            final String IMDB_TITLE     = "property='og:title' content=\"(.*?)(\"| \\()";
+            final String IMDB_YEAR      = "property='og:title' content=\".*?([0-9]{4}?).*?\\)\" />";
             final String IMDB_RECOMMEND = "<div class=\"rec_item\"(.*?)<a href=\"/title/(.*?)/\\?ref_=tt_rec_tti\"";
 
             // Variables
@@ -312,7 +304,7 @@ public class Scraper
             // Get the cast
             pattern = Pattern.compile(IMDB_CAST);
             matcher = pattern.matcher(html);
-            while(matcher.find()) cast = (cast.length() > 0)? cast + ", " + matcher.group(2): matcher.group(2);
+            while(matcher.find()) cast = (cast.length() > 0)? cast + ", " + matcher.group(1): matcher.group(1);
 
             // Get the genre
             pattern = Pattern.compile(IMDB_GENRE);
@@ -334,7 +326,7 @@ public class Scraper
             matcher = pattern.matcher(html);
             if(matcher.find()) rating = Float.parseFloat(matcher.group(1));
 
-            // Get the cast
+            // Get the recommended titles
             pattern = Pattern.compile(IMDB_RECOMMEND);
             matcher = pattern.matcher(html);
             while(matcher.find()) recommended = (recommended.length() > 0)? recommended + ", " + matcher.group(2):
@@ -348,7 +340,7 @@ public class Scraper
             // Get the year
             pattern = Pattern.compile(IMDB_YEAR);
             matcher = pattern.matcher(html);
-            if(matcher.find()) year = Short.parseShort(matcher.group(3));
+            if(matcher.find()) year = Short.parseShort(matcher.group(1));
 
             found = true;
         }
