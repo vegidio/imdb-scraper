@@ -9,14 +9,19 @@ package com.hryun.imdb;
 /**
  * Created by vegidio on 9/1/14.
  */
-public final class SearchType
+public enum SearchType
 {
-    public static final String ALL        = "all";
-    public static final String TITLE      = "tt";
-    public static final String TV_EPISODE = "ep";
-    public static final String NAME       = "nm";
-    public static final String COMPANY    = "co";
-    public static final String KEYWORD    = "kw";
-    public static final String CHARACTER  = "ch";
-    public static final String QUOTE      = "ch";
+    ALL("all"), TITLE("tt"), TV_EPISODE("ep"), NAME("nm"), COMPANY("co"), KEYWORD("kw"), CHARACTER("ch"), QUOTE("ch");
+
+    private final String value;
+
+    SearchType(String value)
+    {
+        this.value = value;
+    }
+
+    public String getValue()
+    {
+        return this.value;
+    }
 }

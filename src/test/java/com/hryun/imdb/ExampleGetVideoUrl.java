@@ -8,12 +8,12 @@ package com.hryun.imdb;
 
 public class ExampleGetVideoUrl
 {
-	public static void main(String[] args)
-	{
-		Scraper scraper = new Scraper();
-		
-		// Get a video by it's IMDb id; in this case, Game of Thrones
-		String url = scraper.getVideoUrl("vi972070937");
-		System.out.println(url);
-	}
+    public static void main(String[] args)
+    {
+        Scraper scraper = new Scraper();
+
+        // Get a video by it's IMDb id; in this case, Game of Thrones
+        String url = scraper.getVideoUrl("vi972070937");
+        System.out.println(url);
+    }
 }

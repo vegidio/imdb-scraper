@@ -8,7 +8,6 @@ package com.hryun.imdb;
 
 import java.io.*;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.channels.Channels;
@@ -41,7 +40,7 @@ public class Scraper
     }
 
     /**
-     * Initialize the constructor and search for with a show with the id
+     * Initialize the constructor and search for a show with the id
      *
      * @param id String - IMDb show id
      */
@@ -65,7 +64,7 @@ public class Scraper
         recommended = "";
         rating = 0f;
         year = 0;
-        videos = new ArrayList<Map<String, String>>();
+        videos = new ArrayList<>();
         found = false;
     }
 
@@ -85,22 +84,16 @@ public class Scraper
 
         ExecutorService executor = Executors.newFixedThreadPool(3);
 
-        Thread t1 = new Thread(new Runnable() {
-            public void run() {
-                parseMain(id);
-            }
+        Thread t1 = new Thread(() -> {
+            parseMain(id);
         });
 
-        Thread t2 = new Thread(new Runnable() {
-            public void run() {
-                parseCredits(id);
-            }
+        Thread t2 = new Thread(() -> {
+            parseCredits(id);
         });
 
-        Thread t3 = new Thread(new Runnable() {
-            public void run() {
-                parseVideos(id);
-            }
+        Thread t3 = new Thread(() -> {
+            parseVideos(id);
         });
 
         // Executando as threads
@@ -133,7 +126,7 @@ public class Scraper
      * @param searchType String - the type of search; options available in the SearchType class;
      * @return List with one or more Map objects; each Map has the keys "id" and "name" of the search results.
      */
-    public List<Map<String, String>> search(String query, String searchType)
+    public List<Map<String, String>> search(String query, SearchType searchType)
     {
         // Regex
         final String SEARCH_ID_NAME = "\"result_text\"> <a href=\"/title/tt([0-9]*)/(.*?)\" >(.*?)</a>";
@@ -141,8 +134,8 @@ public class Scraper
         // Variables
         Pattern pattern;
         Matcher matcher;
-        List<Map<String, String>> list = new ArrayList<Map<String, String>>();
-        Map<String, String> map = null;
+        List<Map<String, String>> list = new ArrayList<>();
+        Map<String, String> map;
 
         // URL encode the query
         String search = null;
@@ -150,7 +143,7 @@ public class Scraper
         catch (UnsupportedEncodingException e) { e.printStackTrace(); }
 
         // Do the search and get the HTML
-        search = "http://www.imdb.com/find?q=" + search + "&s=" + searchType;
+        search = "http://www.imdb.com/find?q=" + search + "&s=" + searchType.getValue();
         String html = fetchHtml(search);
 
         // Extract the ID & Name
@@ -159,7 +152,7 @@ public class Scraper
 
         while(matcher.find())
         {
-            map = new LinkedHashMap<String, String>();
+            map = new LinkedHashMap<>();
             map.put("id", "tt" + matcher.group(1));
             map.put("name", matcher.group(3));
             list.add(map);
@@ -177,26 +170,26 @@ public class Scraper
     {
         if(!this.poster.isEmpty())
         {
-			String url = this.poster;
-			downloadFile(posterFile, url);
-		}
+            String url = this.poster;
+            downloadFile(posterFile, url);
+        }
     }
 
-	/**
-	 * Save the poster locally
-	 *
-	 * @param posterFile File - the location where you want to save the poster file.
-	 * @param bigVersion boolean - if true, it will download the big version of the poster.
-	 */
-	public void downloadPoster(File posterFile, boolean bigVersion)
-	{
-		if(!this.poster.isEmpty())
-		{
-			String url = this.poster;
-			if(bigVersion) { url = url.replaceAll("\\._V1_(.*?)\\.jpg", "._V1_.jpg"); }
-			downloadFile(posterFile, url);
-		}
-	}
+    /**
+     * Save the poster locally
+     *
+     * @param posterFile File - the location where you want to save the poster file.
+     * @param bigVersion boolean - if true, it will download the big version of the poster.
+     */
+    public void downloadPoster(File posterFile, boolean bigVersion)
+    {
+        if(!this.poster.isEmpty())
+        {
+            String url = this.poster;
+            if(bigVersion) url = url.replaceAll("\\._V1_(.*?)\\.jpg", "._V1_.jpg");
+            downloadFile(posterFile, url);
+        }
+    }
 
     /**
      * Download the file
@@ -379,7 +372,7 @@ public class Scraper
 
     private void parseVideos(String id)
     {
-        List<Map<String, String>> list = new ArrayList<Map<String, String>>();
+        List<Map<String, String>> list = new ArrayList<>();
         String url = "http://www.imdb.com/title/" + id + "/videogallery";
         String html = fetchHtml(url);
 
@@ -399,7 +392,7 @@ public class Scraper
 
             while(matcher.find())
             {
-                Map<String, String> map = new LinkedHashMap<String, String>();
+                Map<String, String> map = new LinkedHashMap<>();
                 map.put("id", matcher.group(1));
                 list.add(map);
             }
