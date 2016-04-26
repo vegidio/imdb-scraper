@@ -1,5 +1,6 @@
 # IMDb Scraper
 
+[![JitPack](https://jitpack.io/v/vegidio/imdb-scraper.svg)](https://jitpack.io/#vegidio/imdb-scraper)
 [![Apache 2.0](https://img.shields.io/badge/license-Apache_License_2.0-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0)
 
 This library lets you get IMDb information from movies, series, etc without an API key.
