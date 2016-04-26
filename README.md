@@ -24,7 +24,7 @@ Then add the dependency:
 
 ```
 dependencies {
-	compile 'com.github.vegidio:imdb-scraper:1.0'
+	compile 'com.github.vegidio:imdb-scraper:1.0.2'
 }
 ```
 
@@ -47,7 +47,7 @@ Then add the dependency:
 <dependency>
 	<groupId>com.github.vegidio</groupId>
 	<artifactId>imdb-scraper</artifactId>
-	<version>1.0</version>
+	<version>1.0.2</version>
 </dependency>
 ```
 
@@ -55,7 +55,7 @@ Then add the dependency:
 
 ```java
 Scraper scraper = new Scraper();
-		
+
 // Get a show by its IMDb id; in this case, The Simpsons
 scraper.findById("tt0096697");
 
