@@ -79,4 +79,4 @@ More examples can be found in the folder `src/test/java/com/hryun/imdb/`.
 
 ## Author
 
-Vinicius Egidio (<a href="http://vegidio.github.io">vegidio.github.io</a>)
+Vinicius Egidio (<a href="http://vinicius.io">vinicius.io</a>)
