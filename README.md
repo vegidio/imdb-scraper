@@ -75,8 +75,8 @@ More examples can be found in the folder `src/test/java/com/hryun/imdb/`.
 
 ## License
 
-**imdb-scraper** is released under the Apache License. See <a href="LICENSE.txt">LICENSE</a> for details.
+**imdb-scraper** is released under the Apache License. See [LICENSE](LICENSE.txt) for details.
 
 ## Author
 
-Vinicius Egidio (<a href="http://vinicius.io">vinicius.io</a>)
+Vinicius Egidio ([vinicius.io](http://vinicius.io))
